@@ -36,3 +36,4 @@ async def get_current_user(token: str, db= Depends(get_db)):
     if user is None:
         raise HTTPException(status_code =401, detail = "User not found")
     return user
+

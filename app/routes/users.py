@@ -2,9 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from app.schemas import UserLogin, UserRegister
 from app.database import get_db
-from app.auth import create_token, get_current_user, hash_password, verify_password
-from app.models import User, Post, Follow
-from app.schemas import PostCreate
+from app.auth import create_token, hash_password, verify_password
+from app.models import User
 
 
 router = APIRouter()
@@ -37,39 +36,3 @@ async def login_user(user: UserLogin, db = Depends(get_db)):
         raise HTTPException(status_code =401, detail = "Invalid Credentials")
     token = create_token(found_user.id)
     return {"access_token": token}
-
-
-@router.post("/post")
-async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends(get_current_user)):
-  
-
-    new_post = Post(
-    author_id = current_user.id,
-    content=post.content,
-    )
-
-    db.add(new_post)
-    await db.commit()
-    return {"message": "Content Published"}
-
-@router.post("/follow/{user_id}")
-async def follow_user(user_id: int, db=Depends(get_db), current_user=Depends(get_current_user)):
-    new_following = Follow(
-        follower_id=current_user.id,
-        following_id=user_id,
-    )
-    db.add(new_following)
-    await db.commit()
-    return {"message": "Followed"}
-
-@router.get("/feed")
-async def show_feed(db=Depends(get_db), current_user=Depends(get_current_user)):
-    result = await db.execute(
-        select(Follow.following_id).where(Follow.follower_id == current_user.id)
-    )
-    following_ids = result.scalars().all()
-
-    posts = await db.execute(
-        select(Post).where(Post.author_id.in_(following_ids)).order_by(Post.created_at.desc())
-    )
-    return posts.scalars().all()
