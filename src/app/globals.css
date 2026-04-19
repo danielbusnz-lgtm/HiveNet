@@ -12,6 +12,20 @@
   --font-mono: var(--font-geist-mono);
 }
 
+@theme {
+  --color-ochre-50: #fcf9ee;
+  --color-ochre-100: #f6eecf;
+  --color-ochre-200: #ecdb9b;
+  --color-ochre-300: #e2c467;
+  --color-ochre-400: #dbaf44;
+  --color-ochre-500: #d2932e;
+  --color-ochre-600: #c37927;
+  --color-ochre-700: #9b5522;
+  --color-ochre-800: #7f4421;
+  --color-ochre-900: #68391f;
+  --color-ochre-950: #3b1d0d;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
