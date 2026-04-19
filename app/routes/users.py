@@ -29,10 +29,12 @@ async def register_user(user: UserRegister, db=Depends(get_db)):
 
         db.add(new_user)
         await db.commit()
+        await db.refresh(new_user)
     except Exception:
         await db.rollback()
         raise HTTPException(status_code = 400, detail = "USername or Email Already Taken")
-    return {"message": "User registered"}
+    token = create_token(new_user.id)
+    return {"access_token": token}
 
 
 @router.post("/login")
