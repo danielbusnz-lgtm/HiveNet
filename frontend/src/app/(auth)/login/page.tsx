@@ -12,7 +12,7 @@ export default function Login() {
     const router = useRouter()
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
         const response = await fetch('http://localhost:8000/login', {
