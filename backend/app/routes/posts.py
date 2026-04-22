@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
-from app.schemas import PostCreate
+from app.schemas import PostCreate, PostResponse
 from app.database import get_db
 from app.auth import get_current_user
-from app.models import Post, Follow
+from app.models import Post, Follow, User
 
 
 router = APIRouter()
@@ -22,14 +22,27 @@ async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends
     await db.commit()
     return {"message": "Content Published"}
 
-@router.get("/feed")
+@router.get("/feed", response_model=list[PostResponse])
 async def show_feed(db=Depends(get_db), current_user=Depends(get_current_user)):
     result = await db.execute(
         select(Follow.following_id).where(Follow.follower_id == current_user.id)
     )
     following_ids = result.scalars().all()
 
-    posts = await db.execute(
-        select(Post).where(Post.author_id.in_(following_ids)).order_by(Post.created_at.desc())
+    author_ids = list(following_ids) + [current_user.id]
+
+    rows = await db.execute(
+        select(Post, User.username)
+        .join(User, Post.author_id == User.id)
+        .where(Post.author_id.in_(author_ids))
+        .order_by(Post.created_at.desc())
     )
-    return posts.scalars().all()
+    return [
+        PostResponse(
+            id=post.id,
+            content=post.content,
+            username=username,
+            created_at=post.created_at,
+        )
+        for post, username in rows.all()
+    ]
