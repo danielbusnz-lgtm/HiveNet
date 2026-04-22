@@ -20,15 +20,15 @@ class Post(Base):
     __tablename__  = 'post'
 
     id: Mapped[int] = mapped_column(primary_key = True)
-    author_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"))
+    author_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"), index=True)
     content: Mapped[str] = mapped_column(String(500))
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default= func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default= func.now(), index=True)
 
 
 class Follow(Base):
     __tablename__ = 'follow'
 
     id: Mapped[int] = mapped_column(primary_key = True)
-    follower_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"))
-    following_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"))
+    follower_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"), index=True)
+    following_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default = func.now())
