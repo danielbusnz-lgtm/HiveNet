@@ -22,6 +22,25 @@ async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends
     await db.commit()
     return {"message": "Content Published"}
 
+@router.get("/me/posts", response_model=list[PostResponse])
+async def my_posts(db=Depends(get_db), current_user=Depends(get_current_user)):
+    rows = await db.execute(
+        select(Post, User.username)
+        .join(User, Post.author_id == User.id)
+        .where(Post.author_id == current_user.id)
+        .order_by(Post.created_at.desc())
+    )
+    return [
+        PostResponse(
+            id=post.id,
+            content=post.content,
+            username=username,
+            created_at=post.created_at,
+        )
+        for post, username in rows.all()
+    ]
+
+
 @router.get("/feed", response_model=list[PostResponse])
 async def show_feed(db=Depends(get_db), current_user=Depends(get_current_user)):
     result = await db.execute(

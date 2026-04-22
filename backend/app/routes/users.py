@@ -1,12 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.schemas import UserLogin, UserRegister
 from app.database import get_db
-from app.auth import create_token, hash_password, verify_password
-from app.models import User
+from app.auth import create_token, hash_password, verify_password, get_current_user
+from app.models import User, Post
 
 
 router = APIRouter()
+
+
+@router.get("/me")
+async def get_me(db=Depends(get_db), current_user=Depends(get_current_user)):
+    count_result = await db.execute(
+        select(func.count()).select_from(Post).where(Post.author_id == current_user.id)
+    )
+    post_count = count_result.scalar_one()
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email_address,
+        "created_at": current_user.created_at,
+        "post_count": post_count,
+    }
 
 
 @router.post("/register")
