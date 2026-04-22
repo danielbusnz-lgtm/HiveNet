@@ -4,7 +4,7 @@ import { Button } from '@/components/button'
 import { Field, Label } from '@/components/fieldset'
 import { Textarea } from '@/components/textarea'
 
-export function PostComposer() {
+export function PostComposer({ onPosted }: { onPosted?: () => void }) {
     const [content, setContent] = useState('')
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -23,6 +23,7 @@ export function PostComposer() {
 
         if (response.ok) {
             setContent('')
+            onPosted?.()
         }
     }
 
