@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from jose import jwt
+from jose import jwt, JWTError
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
@@ -29,12 +29,14 @@ def create_token(user_id):
     return token
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db= Depends(get_db)):
-    data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-    
-    user_id  = int(data["sub"])
-    
+    try:
+        data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = int(data["sub"])
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
     sql_result = await db.execute(select(User).where(User.id==  user_id))
-   
+
     user = sql_result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code =401, detail = "User not found")
