@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr
-from datetime import datetime
+from pydantic import BaseModel, EmailStr, field_serializer
+from datetime import datetime, timezone
 
 
 
@@ -30,5 +30,11 @@ class PostResponse(BaseModel):
     content: str
     username: str
     created_at: datetime
+
+    @field_serializer('created_at')
+    def serialize_created_at(self, dt: datetime) -> str:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat().replace('+00:00', 'Z')
 
     
