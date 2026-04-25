@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Heading, Subheading } from '@/components/heading'
 import { Text, Strong } from '@/components/text'
 import { Divider } from '@/components/divider'
+import { API_URL } from '@/lib/api'
 
 type Me = {
     id: number
@@ -41,11 +42,11 @@ export default function ProfilePage() {
         const headers = { Authorization: `Bearer ${token}` }
 
         Promise.all([
-            fetch('http://localhost:8000/me', { headers }).then((r) => {
+            fetch(`${API_URL}/me`, { headers }).then((r) => {
                 if (!r.ok) throw new Error(`me ${r.status}`)
                 return r.json()
             }),
-            fetch('http://localhost:8000/me/posts', { headers }).then((r) => {
+            fetch(`${API_URL}/me/posts`, { headers }).then((r) => {
                 if (!r.ok) throw new Error(`me/posts ${r.status}`)
                 return r.json()
             }),

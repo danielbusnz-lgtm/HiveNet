@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Text, Strong } from '@/components/text'
 import { Divider } from '@/components/divider'
+import { API_URL } from '@/lib/api'
 
 type Post = {
     id: number
@@ -29,7 +30,7 @@ export function Feed({ refreshKey }: { refreshKey: number }) {
     useEffect(() => {
         const token = localStorage.getItem('token')
 
-        fetch('http://localhost:8000/feed', {
+        fetch(`${API_URL}/feed`, {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((r) => {

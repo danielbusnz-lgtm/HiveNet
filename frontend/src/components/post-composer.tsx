@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/button'
 import { Field, Label } from '@/components/fieldset'
 import { Textarea } from '@/components/textarea'
+import { API_URL } from '@/lib/api'
 
 export function PostComposer({ onPosted }: { onPosted?: () => void }) {
     const [content, setContent] = useState('')
@@ -12,7 +13,7 @@ export function PostComposer({ onPosted }: { onPosted?: () => void }) {
 
         const token = localStorage.getItem('token')
 
-        const response = await fetch('http://localhost:8000/posts', {
+        const response = await fetch(`${API_URL}/posts`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

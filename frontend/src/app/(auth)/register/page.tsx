@@ -6,6 +6,7 @@ import { Field, Label } from '@/components/fieldset'
 import { Heading } from '@/components/heading'
 import { Input } from '@/components/input'
 import { Strong, Text, TextLink } from '@/components/text'
+import { API_URL } from '@/lib/api'
 
 export default function Register() {
   const [username, setUsername] = useState('')
@@ -15,7 +16,7 @@ export default function Register() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    const response = await fetch('http://localhost:8000/register', {
+    const response = await fetch(`${API_URL}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, email, password }),
