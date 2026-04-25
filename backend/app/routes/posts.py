@@ -1,12 +1,28 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select, func, exists, delete
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.schemas import PostCreate, PostResponse
 from app.database import get_db
 from app.auth import get_current_user
-from app.models import Post, Follow, User
+from app.models import Post, Follow, User, Like
 
 
 router = APIRouter()
+
+
+def _post_query(current_user_id: int):
+    like_count = (
+        select(func.count(Like.id))
+        .where(Like.post_id == Post.id)
+        .correlate(Post)
+        .scalar_subquery()
+    )
+    liked_by_me = exists(
+        select(1).where(Like.post_id == Post.id, Like.user_id == current_user_id)
+    ).correlate(Post)
+    return select(Post, User.username, like_count.label("like_count"), liked_by_me.label("liked_by_me")).join(
+        User, Post.author_id == User.id
+    )
 
 
 @router.post("/posts")
@@ -25,8 +41,7 @@ async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends
 @router.get("/me/posts", response_model=list[PostResponse])
 async def my_posts(db=Depends(get_db), current_user=Depends(get_current_user)):
     rows = await db.execute(
-        select(Post, User.username)
-        .join(User, Post.author_id == User.id)
+        _post_query(current_user.id)
         .where(Post.author_id == current_user.id)
         .order_by(Post.created_at.desc())
     )
@@ -36,8 +51,10 @@ async def my_posts(db=Depends(get_db), current_user=Depends(get_current_user)):
             content=post.content,
             username=username,
             created_at=post.created_at,
+            like_count=like_count,
+            liked_by_me=liked_by_me,
         )
-        for post, username in rows.all()
+        for post, username, like_count, liked_by_me in rows.all()
     ]
 
 
@@ -51,8 +68,7 @@ async def show_feed(db=Depends(get_db), current_user=Depends(get_current_user)):
     author_ids = list(following_ids) + [current_user.id]
 
     rows = await db.execute(
-        select(Post, User.username)
-        .join(User, Post.author_id == User.id)
+        _post_query(current_user.id)
         .where(Post.author_id.in_(author_ids))
         .order_by(Post.created_at.desc())
     )
@@ -62,6 +78,31 @@ async def show_feed(db=Depends(get_db), current_user=Depends(get_current_user)):
             content=post.content,
             username=username,
             created_at=post.created_at,
+            like_count=like_count,
+            liked_by_me=liked_by_me,
         )
-        for post, username in rows.all()
+        for post, username, like_count, liked_by_me in rows.all()
     ]
+
+
+@router.post("/posts/{post_id}/like", status_code=204)
+async def like_post(post_id: int, db=Depends(get_db), current_user=Depends(get_current_user)):
+    post = await db.get(Post, post_id)
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    stmt = (
+        pg_insert(Like)
+        .values(user_id=current_user.id, post_id=post_id)
+        .on_conflict_do_nothing(index_elements=["user_id", "post_id"])
+    )
+    await db.execute(stmt)
+    await db.commit()
+
+
+@router.delete("/posts/{post_id}/like", status_code=204)
+async def unlike_post(post_id: int, db=Depends(get_db), current_user=Depends(get_current_user)):
+    await db.execute(
+        delete(Like).where(Like.user_id == current_user.id, Like.post_id == post_id)
+    )
+    await db.commit()

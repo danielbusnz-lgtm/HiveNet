@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, DateTime, func, ForeignKey
+from sqlalchemy import String, DateTime, func, ForeignKey, UniqueConstraint
 from datetime import datetime
 
 
@@ -32,3 +32,13 @@ class Follow(Base):
     follower_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"), index=True)
     following_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default = func.now())
+
+
+class Like(Base):
+    __tablename__ = 'like'
+    __table_args__ = (UniqueConstraint("user_id", "post_id", name="uq_like_user_post"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"), index=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("post.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
