@@ -4,6 +4,10 @@ Shared test fixtures for HiveNet.
 Pytest auto-loads this file — no imports needed in test files.
 Any fixture defined here is available to every test in tests/ and subfolders.
 """
+import os
+
+os.environ.setdefault("SKIP_DB_INIT", "1")
+
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient

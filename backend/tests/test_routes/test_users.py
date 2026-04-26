@@ -10,13 +10,15 @@ def test_register_happy_path(client):
     assert response.status_code == 200
 
 
-def test_register_returns_success_message(client):
+def test_register_returns_access_token(client):
     response = client.post("/register", json={
         "email": "new@test.com",
         "username": "newuser",
         "password": "strongpass",
     })
-    assert response.json() == {"message": "User registered"}
+    body = response.json()
+    assert "access_token" in body
+    assert isinstance(body["access_token"], str) and body["access_token"]
 
 
 def test_register_does_not_contain_password(client):
