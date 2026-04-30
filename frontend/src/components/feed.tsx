@@ -62,7 +62,7 @@ function LikeButton({
             aria-pressed={post.liked_by_me}
             className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-red-500 disabled:opacity-50"
         >
-            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-md">
+            <span className="text-white/40 drop-shadow-[0_0_4px_rgba(255,255,255,0.7)] text-base">
                 {post.liked_by_me ? '♥' : '♡'}
             </span>
             <span>{post.like_count}</span>
