@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Text, Strong } from '@/components/text'
 import { Divider } from '@/components/divider'
-import { API_URL } from '@/lib/api'
+import { apiFetch } from '@/lib/api'
 
 type Post = {
     id: number
@@ -44,12 +44,8 @@ function LikeButton({
         onChange(next)
         setPending(true)
         try {
-            const token = localStorage.getItem('token')
             const method = post.liked_by_me ? 'DELETE' : 'POST'
-            const r = await fetch(`${API_URL}/posts/${post.id}/like`, {
-                method,
-                headers: { Authorization: `Bearer ${token}` },
-            })
+            const r = await apiFetch(`/posts/${post.id}/like`, { method })
             if (!r.ok) throw new Error(`like ${r.status}`)
         } catch {
             onChange(previous)
@@ -77,11 +73,7 @@ export function Feed({ refreshKey }: { refreshKey: number }) {
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        const token = localStorage.getItem('token')
-
-        fetch(`${API_URL}/feed`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        apiFetch('/feed')
             .then((r) => {
                 if (!r.ok) throw new Error(`${r.status}`)
                 return r.json()
