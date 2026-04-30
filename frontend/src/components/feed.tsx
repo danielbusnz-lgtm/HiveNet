@@ -60,9 +60,11 @@ function LikeButton({
             onClick={handleClick}
             disabled={pending}
             aria-pressed={post.liked_by_me}
-            className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-sm text-zinc-700 dark:text-white hover:bg-white/20 hover:text-red-500 disabled:opacity-50 transition"
+            className="mt-2 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-red-500 disabled:opacity-50"
         >
-            <span>{post.liked_by_me ? '♥' : '♡'}</span>
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-md">
+                {post.liked_by_me ? '♥' : '♡'}
+            </span>
             <span>{post.like_count}</span>
         </button>
     )
