@@ -63,7 +63,7 @@ function LikeButton({
             className="group mt-2 inline-flex items-center gap-2 text-sm text-zinc-500 disabled:opacity-50"
         >
             {post.liked_by_me ? (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 fill-white/15 drop-shadow-[0_0_2px_rgba(255,255,255,0.4)] group-hover:fill-red-500/40 group-hover:drop-shadow-[0_0_3px_rgba(239,68,68,0.5)] transition">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 fill-red-500/70 drop-shadow-[0_0_3px_rgba(239,68,68,0.5)] group-hover:fill-red-500 transition">
                     <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.514 3 7.5 3a5.5 5.5 0 0 1 4.5 2.3A5.5 5.5 0 0 1 16.5 3c2.986 0 5.25 2.322 5.25 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
                 </svg>
             ) : (
