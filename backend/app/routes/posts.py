@@ -25,6 +25,34 @@ def _post_query(current_user_id: int):
     )
 
 
+
+@router.get("/users/{username}/posts", response_model=list[PostResponse])
+async def user_posts(username: str, db=Depends(get_db), current_user=Depends(get_current_user)):
+    result = await db.execute(select(User).where(User.username == username))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    rows = await db.execute(
+        _post_query(current_user.id)
+        .where(Post.author_id == user.id)
+        .order_by(Post.created_at.desc())
+    )
+    return [
+        PostResponse(
+            id=post.id,
+            content=post.content,
+            username=username,
+            created_at=post.created_at,
+            like_count=like_count,
+            liked_by_me=liked_by_me,
+        )
+        for post, username, like_count, liked_by_me in rows.all()
+    ]
+
+
+
+
 @router.post("/posts")
 async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends(get_current_user)):
 
