@@ -4,6 +4,7 @@ Shared test fixtures for HiveNet.
 Pytest auto-loads this file — no imports needed in test files.
 Any fixture defined here is available to every test in tests/ and subfolders.
 """
+
 import os
 
 os.environ.setdefault("SKIP_DB_INIT", "1")
@@ -11,14 +12,13 @@ os.environ.setdefault("SKIP_DB_INIT", "1")
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from app.auth import create_token, hash_password
+from app.database import get_db
 from app.main import app
 from app.models import Base, User
-from app.database import get_db
-from app.auth import hash_password, create_token
-
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
