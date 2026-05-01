@@ -26,10 +26,10 @@ export function FollowButton({
             type="button"
             onClick={handleClick}
             aria-pressed={isFollowing}
-            className={`group inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium transition ${
+            className={`group inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800 px-4 py-1.5 text-sm font-medium text-zinc-300 transition ${
                 isFollowing
-                    ? 'border-zinc-700 bg-zinc-800 text-zinc-300 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400'
-                    : 'border-blue-500/50 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
+                    ? 'hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-500'
+                    : 'hover:border-green-800 hover:bg-green-800 hover:text-green'
             }`}
         >
             <svg
