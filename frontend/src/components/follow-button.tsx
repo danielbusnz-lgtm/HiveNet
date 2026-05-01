@@ -1,7 +1,13 @@
 'use client'
 
+import { useState } from 'react'
+import { apiFetch } from '@/lib/api'
+
 /**
  * Toggle follow / unfollow for a given user, with optimistic UI.
+ *
+ * Flips the visual state immediately, sends POST or DELETE to /follow/{userId},
+ * and reverts if the request fails.
  *
  * @param userId - The numeric ID of the user to follow.
  * @param isFollowing - Whether the viewer currently follows them.
@@ -16,17 +22,34 @@ export function FollowButton({
     isFollowing: boolean
     onChange: (next: boolean) => void
 }) {
-    const handleClick = () => {
-        // wired up in step 2
-        onChange(!isFollowing)
+    const [pending, setPending] = useState(false)
+
+    const handleClick = async () => {
+        if (pending) return
+
+        const previous = isFollowing
+        const next = !isFollowing
+
+        onChange(next)
+        setPending(true)
+        try {
+            const method = isFollowing ? 'DELETE' : 'POST'
+            const r = await apiFetch(`/follow/${userId}`, { method })
+            if (!r.ok) throw new Error(`follow ${r.status}`)
+        } catch {
+            onChange(previous)
+        } finally {
+            setPending(false)
+        }
     }
 
     return (
         <button
             type="button"
             onClick={handleClick}
+            disabled={pending}
             aria-pressed={isFollowing}
-            className={`group inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800 px-4 py-1.5 text-sm font-medium text-zinc-300 transition ${
+            className={`group inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800 px-4 py-1.5 text-sm font-medium text-zinc-300 transition disabled:opacity-50 ${
                 isFollowing
                     ? 'hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-500'
                     : 'hover:border-green-800 hover:bg-green-800 hover:text-green'
