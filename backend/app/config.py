@@ -1,3 +1,5 @@
+"""Environment-driven configuration: database URL and JWT settings."""
+
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://dan:social123@localhost:5432/social")

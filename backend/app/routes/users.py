@@ -1,3 +1,5 @@
+"""User endpoints: profile lookup, current user, register, login."""
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
 
@@ -11,6 +13,11 @@ router = APIRouter()
 
 @router.get("/users/{username}")
 async def get_user(username: str, db=Depends(get_db), current_user=Depends(get_current_user)):
+    """Return a user's public profile with post/follower/following counts.
+
+    Raises:
+        HTTPException: 404 if the username does not exist.
+    """
     result = await db.execute(select(User).where(User.username == username))
     user = result.scalar_one_or_none()
     if not user:
@@ -54,6 +61,7 @@ async def get_user(username: str, db=Depends(get_db), current_user=Depends(get_c
 
 @router.get("/me")
 async def get_me(db=Depends(get_db), current_user=Depends(get_current_user)):
+    """Return the authenticated user's profile, including private fields like email."""
     count_result = await db.execute(
         select(func.count()).select_from(Post).where(Post.author_id == current_user.id)
     )
@@ -69,6 +77,11 @@ async def get_me(db=Depends(get_db), current_user=Depends(get_current_user)):
 
 @router.post("/register")
 async def register_user(user: UserRegister, db=Depends(get_db)):
+    """Register a new account and return an access token.
+
+    Raises:
+        HTTPException: 400 if the email or username is already taken.
+    """
     find_user_email = await db.execute(select(User).where(User.email_address == user.email))
     if find_user_email.scalar():
         raise HTTPException(status_code=400, detail="User already exists")
@@ -95,7 +108,11 @@ async def register_user(user: UserRegister, db=Depends(get_db)):
 
 @router.post("/login")
 async def login_user(user: UserLogin, db=Depends(get_db)):
+    """Verify credentials and return an access token.
 
+    Raises:
+        HTTPException: 401 if the username or password is wrong.
+    """
     result = await db.execute(select(User).where(User.username == user.username))
     found_user = result.scalar_one_or_none()
     if not found_user:

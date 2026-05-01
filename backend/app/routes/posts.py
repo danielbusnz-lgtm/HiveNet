@@ -1,3 +1,5 @@
+"""Post endpoints: create, list (mine, by user, feed), like/unlike."""
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, exists, func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -11,6 +13,7 @@ router = APIRouter()
 
 
 def _post_query(current_user_id: int):
+    """Build a base SELECT joining posts to author username, like count, and viewer's like state."""
     like_count = (
         select(func.count(Like.id)).where(Like.post_id == Post.id).correlate(Post).scalar_subquery()
     )
@@ -27,6 +30,11 @@ def _post_query(current_user_id: int):
 
 @router.get("/users/{username}/posts", response_model=list[PostResponse])
 async def user_posts(username: str, db=Depends(get_db), current_user=Depends(get_current_user)):
+    """Return all posts by the given user, newest first.
+
+    Raises:
+        HTTPException: 404 if the username does not exist.
+    """
     result = await db.execute(select(User).where(User.username == username))
     user = result.scalar_one_or_none()
     if not user:
@@ -52,7 +60,7 @@ async def user_posts(username: str, db=Depends(get_db), current_user=Depends(get
 
 @router.post("/posts")
 async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends(get_current_user)):
-
+    """Publish a new post authored by the current user."""
     new_post = Post(
         author_id=current_user.id,
         content=post.content,
@@ -65,6 +73,7 @@ async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends
 
 @router.get("/me/posts", response_model=list[PostResponse])
 async def my_posts(db=Depends(get_db), current_user=Depends(get_current_user)):
+    """Return all posts by the authenticated user, newest first."""
     rows = await db.execute(
         _post_query(current_user.id)
         .where(Post.author_id == current_user.id)
@@ -85,6 +94,7 @@ async def my_posts(db=Depends(get_db), current_user=Depends(get_current_user)):
 
 @router.get("/feed", response_model=list[PostResponse])
 async def show_feed(db=Depends(get_db), current_user=Depends(get_current_user)):
+    """Return posts from the people the user follows, plus their own, newest first."""
     result = await db.execute(
         select(Follow.following_id).where(Follow.follower_id == current_user.id)
     )
@@ -112,6 +122,11 @@ async def show_feed(db=Depends(get_db), current_user=Depends(get_current_user)):
 
 @router.post("/posts/{post_id}/like", status_code=204)
 async def like_post(post_id: int, db=Depends(get_db), current_user=Depends(get_current_user)):
+    """Like a post. Idempotent — liking twice is a no-op.
+
+    Raises:
+        HTTPException: 404 if the post does not exist.
+    """
     post = await db.get(Post, post_id)
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -127,5 +142,6 @@ async def like_post(post_id: int, db=Depends(get_db), current_user=Depends(get_c
 
 @router.delete("/posts/{post_id}/like", status_code=204)
 async def unlike_post(post_id: int, db=Depends(get_db), current_user=Depends(get_current_user)):
+    """Remove the current user's like from a post. Idempotent."""
     await db.execute(delete(Like).where(Like.user_id == current_user.id, Like.post_id == post_id))
     await db.commit()

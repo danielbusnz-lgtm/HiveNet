@@ -1,3 +1,5 @@
+"""Password hashing, JWT issuance, and the current-user dependency."""
+
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, HTTPException
@@ -16,14 +18,17 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 def hash_password(password: str) -> str:
+    """Hash a plain-text password with bcrypt."""
     return pwd_context.hash(password)
 
 
 def verify_password(password: str, hash_password):
+    """Return True if `password` matches the bcrypt hash."""
     return pwd_context.verify(password, hash_password)
 
 
 def create_token(user_id):
+    """Issue a JWT access token for the given user id."""
     data = {
         "sub": str(user_id),
         "exp": datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
@@ -33,6 +38,11 @@ def create_token(user_id):
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
+    """Resolve the request's bearer token into a User row.
+
+    Raises:
+        HTTPException: 401 if the token is invalid, expired, or the user is gone.
+    """
     try:
         data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user_id = int(data["sub"])

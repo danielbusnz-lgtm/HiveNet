@@ -1,3 +1,5 @@
+"""FastAPI app entrypoint: lifespan, CORS, and router registration."""
+
 import os
 from contextlib import asynccontextmanager
 
@@ -13,6 +15,7 @@ from app.routes.users import router as users_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Create database tables on startup unless SKIP_DB_INIT=1."""
     if os.getenv("SKIP_DB_INIT") != "1":
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)

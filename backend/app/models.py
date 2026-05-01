@@ -1,3 +1,5 @@
+"""SQLAlchemy ORM models: User, Post, Follow, Like."""
+
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
@@ -5,10 +7,14 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
+    """Declarative base for all ORM models."""
+
     pass
 
 
 class User(Base):
+    """A registered account with a unique username and email."""
+
     __tablename__ = "user_info"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -19,6 +25,8 @@ class User(Base):
 
 
 class Post(Base):
+    """A short post authored by a user."""
+
     __tablename__ = "post"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -28,6 +36,8 @@ class Post(Base):
 
 
 class Follow(Base):
+    """A directed follower → following relationship between two users."""
+
     __tablename__ = "follow"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -37,6 +47,8 @@ class Follow(Base):
 
 
 class Like(Base):
+    """A user's like of a post; (user_id, post_id) is unique."""
+
     __tablename__ = "like"
     __table_args__ = (UniqueConstraint("user_id", "post_id", name="uq_like_user_post"),)
 
