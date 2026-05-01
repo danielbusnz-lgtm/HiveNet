@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Text, Strong } from '@/components/text'
 import { Divider } from '@/components/divider'
+import { Link } from '@/components/link'
 import { apiFetch } from '@/lib/api'
 
 type Post = {
@@ -104,7 +105,9 @@ export function Feed({ refreshKey }: { refreshKey: number }) {
                 <div key={post.id}>
                     {i > 0 && <Divider className="mb-4" />}
                     <div className="flex items-baseline gap-2">
-                        <Strong>@{post.username}</Strong>
+                        <Link href={`/users/${post.username}`} className="hover:underline">
+                            <Strong>@{post.username}</Strong>
+                        </Link>
                         <Text className="text-xs">{timeAgo(post.created_at)}</Text>
                     </div>
                     <Text className="mt-1 whitespace-pre-wrap">{post.content}</Text>
