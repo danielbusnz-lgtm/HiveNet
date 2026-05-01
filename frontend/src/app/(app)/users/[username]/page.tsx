@@ -92,6 +92,3 @@ export default function UserProfilePage({ params }: { params: Promise<{ username
         </div>
     )
 }
-
-
-
