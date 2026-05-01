@@ -2,6 +2,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+/**
+ * Wrap any subtree to require a logged-in user.
+ *
+ * Renders nothing while checking the token. Redirects to `/login` if no token is found,
+ * otherwise renders `children`.
+ */
 export function AuthGate({ children }: { children: React.ReactNode }) {
     const router = useRouter()
     const [ready, setReady] = useState(false)

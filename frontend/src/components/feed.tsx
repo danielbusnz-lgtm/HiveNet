@@ -14,6 +14,10 @@ type Post = {
     liked_by_me: boolean
 }
 
+/**
+ * Format an ISO timestamp as a short relative time string.
+ * @example timeAgo('2026-05-01T10:00:00Z') // "2h ago"
+ */
 function timeAgo(iso: string) {
     const diffMs = Date.now() - new Date(iso).getTime()
     const sec = Math.floor(diffMs / 1000)
@@ -26,6 +30,14 @@ function timeAgo(iso: string) {
     return `${day}d ago`
 }
 
+/**
+ * Heart-shaped button that toggles a like with optimistic UI.
+ *
+ * Flips state immediately, sends POST/DELETE to the API, and reverts on failure.
+ *
+ * @param post - The post being liked.
+ * @param onChange - Called with the next `{ like_count, liked_by_me }` so the parent can update state.
+ */
 function LikeButton({
     post,
     onChange,
@@ -93,6 +105,11 @@ function LikeButton({
     )
 }
 
+/**
+ * Renders the home feed: posts from followed users plus the viewer's own, newest first.
+ *
+ * @param refreshKey - Bump this to force a refetch (e.g., after creating a post).
+ */
 export function Feed({ refreshKey }: { refreshKey: number }) {
     const [posts, setPosts] = useState<Post[] | null>(null)
     const [error, setError] = useState<string | null>(null)

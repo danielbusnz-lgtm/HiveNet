@@ -5,6 +5,11 @@ import { Field, Label } from '@/components/fieldset'
 import { Textarea } from '@/components/textarea'
 import { API_URL } from '@/lib/api'
 
+/**
+ * Textarea + submit button for creating a new post.
+ *
+ * @param onPosted - Optional callback fired after a successful post (e.g., to refresh the feed).
+ */
 export function PostComposer({ onPosted }: { onPosted?: () => void }) {
     const [content, setContent] = useState('')
 
