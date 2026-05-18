@@ -1,1 +1,1 @@
-My Attempt to create a fullstack app. Uses FastAPI for backend and Typescript  for  the frontend.
+Full-stack social network  FastAPI + Next.js + Postgres.
