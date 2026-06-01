@@ -5,7 +5,6 @@ import {
     Sidebar,
     SidebarBody,
     SidebarHeader,
-    SidebarHeading,
     SidebarItem,
     SidebarLabel,
     SidebarSection,
@@ -29,9 +28,7 @@ export function ApplicationLayout({ children }: { children: React.ReactNode }) {
             sidebar={
                 <Sidebar>
                     <SidebarHeader>
-                        <SidebarHeading className="px-2 text-lg font-semibold text-zinc-950 dark:text-white">
-                            HiveNet
-                        </SidebarHeading>
+                        <img src="/logo.svg" alt="HiveNet" className="h-16 w-auto" />
                     </SidebarHeader>
 
                     <SidebarBody>

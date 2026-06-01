@@ -1,1 +1,3 @@
-Full-stack social network  FastAPI + Next.js + Postgres.
+<p align="center">
+  <img src="frontend/public/logo.svg" alt="HiveNet" width="420" />
+</p>
