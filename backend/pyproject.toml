@@ -9,7 +9,7 @@ dependencies = [
     "asyncpg",
     "python-jose[cryptography]",
     "passlib[bcrypt]",
-    "uvicorn",
+    "uvicorn[standard]",
     "pydantic[email]",
     "bcrypt==4.0.1",
 ]

@@ -37,16 +37,27 @@ def create_token(user_id):
     return token
 
 
+def decode_token(token: str) -> int | None:
+    """Return the user id from a valid JWT, or None if invalid or expired.
+
+    Used by both the HTTP dependency and the WebSocket endpoint, which can't
+    go through `oauth2_scheme` (browsers can't set headers on a WS handshake).
+    """
+    try:
+        data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return int(data["sub"])
+    except (JWTError, KeyError, ValueError):
+        return None
+
+
 async def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
     """Resolve the request's bearer token into a User row.
 
     Raises:
         HTTPException: 401 if the token is invalid, expired, or the user is gone.
     """
-    try:
-        data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        user_id = int(data["sub"])
-    except JWTError:
+    user_id = decode_token(token)
+    if user_id is None:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
     sql_result = await db.execute(select(User).where(User.id == user_id))

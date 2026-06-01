@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Follow, Like, Post, User
+from app.realtime import manager
 from app.schemas import PostCreate, PostResponse
 
 router = APIRouter()
@@ -68,6 +69,23 @@ async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends
 
     db.add(new_post)
     await db.commit()
+    # Reload to get the DB-assigned id and created_at, then push the new post
+    # to every connected client so their feed updates without a refresh. Shape
+    # matches PostResponse so the frontend can drop it straight into the feed.
+    await db.refresh(new_post)
+    await manager.broadcast(
+        {
+            "type": "new_post",
+            "post": {
+                "id": new_post.id,
+                "content": new_post.content,
+                "username": current_user.username,
+                "created_at": new_post.created_at.isoformat(),
+                "like_count": 0,
+                "liked_by_me": False,
+            },
+        }
+    )
     return {"message": "Content Published"}
 
 
