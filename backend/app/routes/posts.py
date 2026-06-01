@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import Follow, Like, Post, User
+from app.models import Comment, Follow, Like, Post, User
 from app.realtime import manager
 from app.schemas import PostCreate, PostResponse
 
@@ -18,6 +18,12 @@ def _post_query(current_user_id: int):
     like_count = (
         select(func.count(Like.id)).where(Like.post_id == Post.id).correlate(Post).scalar_subquery()
     )
+    comment_count = (
+        select(func.count(Comment.id))
+        .where(Comment.post_id == Post.id)
+        .correlate(Post)
+        .scalar_subquery()
+    )
     liked_by_me = exists(
         select(1).where(Like.post_id == Post.id, Like.user_id == current_user_id)
     ).correlate(Post)
@@ -26,6 +32,7 @@ def _post_query(current_user_id: int):
         User.username,
         like_count.label("like_count"),
         liked_by_me.label("liked_by_me"),
+        comment_count.label("comment_count"),
     ).join(User, Post.author_id == User.id)
 
 
@@ -54,8 +61,9 @@ async def user_posts(username: str, db=Depends(get_db), current_user=Depends(get
             created_at=post.created_at,
             like_count=like_count,
             liked_by_me=liked_by_me,
+            comment_count=comment_count,
         )
-        for post, username, like_count, liked_by_me in rows.all()
+        for post, username, like_count, liked_by_me, comment_count in rows.all()
     ]
 
 
@@ -83,6 +91,7 @@ async def create_post(post: PostCreate, db=Depends(get_db), current_user=Depends
                 "created_at": new_post.created_at.isoformat(),
                 "like_count": 0,
                 "liked_by_me": False,
+                "comment_count": 0,
             },
         }
     )
@@ -105,8 +114,9 @@ async def my_posts(db=Depends(get_db), current_user=Depends(get_current_user)):
             created_at=post.created_at,
             like_count=like_count,
             liked_by_me=liked_by_me,
+            comment_count=comment_count,
         )
-        for post, username, like_count, liked_by_me in rows.all()
+        for post, username, like_count, liked_by_me, comment_count in rows.all()
     ]
 
 
@@ -133,9 +143,33 @@ async def show_feed(db=Depends(get_db), current_user=Depends(get_current_user)):
             created_at=post.created_at,
             like_count=like_count,
             liked_by_me=liked_by_me,
+            comment_count=comment_count,
         )
-        for post, username, like_count, liked_by_me in rows.all()
+        for post, username, like_count, liked_by_me, comment_count in rows.all()
     ]
+
+
+@router.get("/posts/{post_id}", response_model=PostResponse)
+async def get_post(post_id: int, db=Depends(get_db), current_user=Depends(get_current_user)):
+    """Return a single post for its detail page.
+
+    Raises:
+        HTTPException: 404 if the post does not exist.
+    """
+    rows = await db.execute(_post_query(current_user.id).where(Post.id == post_id))
+    row = rows.first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    post, username, like_count, liked_by_me, comment_count = row
+    return PostResponse(
+        id=post.id,
+        content=post.content,
+        username=username,
+        created_at=post.created_at,
+        like_count=like_count,
+        liked_by_me=liked_by_me,
+        comment_count=comment_count,
+    )
 
 
 @router.post("/posts/{post_id}/like", status_code=204)

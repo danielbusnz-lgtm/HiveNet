@@ -49,6 +49,29 @@ class PostResponse(BaseModel):
     created_at: datetime
     like_count: int
     liked_by_me: bool
+    comment_count: int
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, dt: datetime) -> str:
+        """Format `created_at` as a UTC ISO 8601 string (e.g. `2026-05-01T12:00:00Z`)."""
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat().replace("+00:00", "Z")
+
+
+class CommentCreate(BaseModel):
+    """Body schema for `POST /posts/{post_id}/comments`."""
+
+    content: str
+
+
+class CommentResponse(BaseModel):
+    """A comment enriched with its author's username."""
+
+    id: int
+    content: str
+    username: str
+    created_at: datetime
 
     @field_serializer("created_at")
     def serialize_created_at(self, dt: datetime) -> str:

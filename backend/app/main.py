@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
 from app.models import Base
+from app.routes.comments import router as comments_router
 from app.routes.follows import router as follows_router
 from app.routes.posts import router as posts_router
 from app.routes.users import router as users_router
@@ -40,4 +41,5 @@ app.add_middleware(
 app.include_router(users_router)
 app.include_router(posts_router)
 app.include_router(follows_router)
+app.include_router(comments_router)
 app.include_router(ws_router)
