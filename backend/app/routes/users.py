@@ -111,9 +111,9 @@ async def login_user(user: UserLogin, db=Depends(get_db)):
     """Verify credentials and return an access token.
 
     Raises:
-        HTTPException: 401 if the username or password is wrong.
+        HTTPException: 401 if the email or password is wrong.
     """
-    result = await db.execute(select(User).where(User.username == user.username))
+    result = await db.execute(select(User).where(User.email_address == user.email))
     found_user = result.scalar_one_or_none()
     if not found_user:
         raise HTTPException(status_code=401, detail="Invalid Credentials")

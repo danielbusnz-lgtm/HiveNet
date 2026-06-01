@@ -16,7 +16,7 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     """Body schema for `POST /login`."""
 
-    username: str
+    email: EmailStr
     password: str
 
 
