@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models: User, Post, Follow, Like."""
+"""SQLAlchemy ORM models: User, Post, Follow, Like, Comment."""
 
 from datetime import datetime
 
@@ -56,3 +56,16 @@ class Like(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"), index=True)
     post_id: Mapped[int] = mapped_column(ForeignKey("post.id"), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class Comment(Base):
+    """A user's comment on a post. Flat for now; a nullable parent_comment_id
+    would add threaded replies later."""
+
+    __tablename__ = "comment"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("post.id"), index=True)
+    author_id: Mapped[int] = mapped_column(ForeignKey("user_info.id"), index=True)
+    content: Mapped[str] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), index=True)
