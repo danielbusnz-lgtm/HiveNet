@@ -26,12 +26,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+# Production origins live in CORS_ORIGINS (comma-separated) so they can change
+# without a code edit; the localhost/preview defaults stay baked in for dev.
+_default_origins = [
+    "http://localhost:3000",
+    "https://frontend-beryl-one-70.vercel.app",
+    "https://hivenet.si9num.com",
+]
+_extra_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://frontend-beryl-one-70.vercel.app",
-    ],
+    allow_origins=_default_origins + _extra_origins,
     allow_origin_regex=r"https://frontend-[a-z0-9-]+-daniel-s-projects-96f1712a\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
